@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from auth import get_current_user, get_password_hash, verify_password, create_access_token
 from models import (
     WorkoutSession, WorkoutSet, Exercise, User, UserCreate, Token,
-    ExerciseCreate, WorkoutSessionCreate, WorkoutSetCreate, WorkoutSetUpdate
+    ExerciseCreate, WorkoutSessionCreate, WorkoutSetCreate, WorkoutSetUpdate, WorkoutSessionReadwithSets
 )
 from datetime import datetime
 
@@ -109,7 +109,7 @@ def get_user_workout_session(
     return Sessions
 
 # GET 4 --> Get details of a specific workout session
-@app.get("/workouts/sessions/{session_id}", response_model=WorkoutSession, tags=["Session"])
+@app.get("/workouts/sessions/{session_id}", response_model=WorkoutSessionReadwithSets, tags=["Session"])
 def get_workout_session_details(
     session_id: int,
     current_user: Annotated[User, Depends(get_current_user)],

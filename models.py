@@ -73,3 +73,15 @@ class Token(SQLModel):
 
 class TokenData(SQLModel):
     username: Optional[str] = None
+
+class ExcerciseRead(ExerciseBase):
+    id: int
+
+class WorkoutSetRead(WorkoutSetBase):
+    id: int
+    exercise: ExcerciseRead
+
+class WorkoutSessionReadwithSets(WorkoutSessionBase):
+    id: int
+    user_id: int
+    sets: List[WorkoutSetRead]=[]
