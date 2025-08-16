@@ -1,6 +1,6 @@
 # FitTrack-API
 
-"FitTrack" is a personal fitness API to track workouts, body metrics, and personal records. This project is built with FastAPI and SQLModel, featuring JWT authentication and a complete set of CRUD endpoints for managing fitness data.
+"FitTrack" is a personal fitness API to track workouts, body metrics, and personal best performance records. This project is built with FastAPI and SQLModel, featuring JWT authentication and a complete set of CRUD endpoints for managing fitness data. It's nothing but a Gateway to the Fitness World.
 
 ## Motivation
 I recently started going GYM, I wanted something simple to keep track of my daily workouts, my body weight, my streaks and achievements without any complicated app. Cherry on the top, there was an YSWS called EndPointer going on which pushed me to build a complete RESTful API with JWT authentication from scratch. I'm very happy to successfully build my very first API.
