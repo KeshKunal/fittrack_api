@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-from sqlmodel import SQLModel, Session,  select
+from sqlmodel import SQLModel, Session,  select, desc
 from database import engine, get_session
 from typing import Annotated, List
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from auth import get_current_user, get_password_hash, verify_password, create_access_token
 from models import (
     WorkoutSession, WorkoutSet, Exercise, User, UserCreate, Token,
-    ExerciseCreate, WorkoutSessionCreate, WorkoutSetCreate, WorkoutSetUpdate, WorkoutSessionReadwithSets
+    ExerciseCreate, WorkoutSessionCreate, WorkoutSetCreate, WorkoutSetUpdate, WorkoutSessionReadwithSets, PersonalRecordTrack
 )
 from datetime import datetime
 
@@ -177,7 +177,7 @@ def delete_workout_set(
     if not db_set:
         raise HTTPException(status_code=404, detail="Set not found")
 
-    # Verify ownership
+    # Verify
     workout_session = session.get(WorkoutSession, db_set.session_id)
     if not workout_session or workout_session.user_id!= current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this set")
@@ -185,3 +185,35 @@ def delete_workout_set(
     session.delete(db_set)
     session.commit()
     return {"message": "Set deleted successfully"}
+
+# GET --> Personal Record Track
+
+@app.get("/exercises/{exercise_id}/p_record", response_model=PersonalRecordTrack, tags=["Personal Records"])
+def get_personal_record(
+    exercise_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_session)]
+):
+    
+    exercise= session.get(Exercise, exercise_id )
+    if not exercise:
+        raise HTTPException(status_code=404, detail="Exercise not Found")
+
+    pr_set=session.exec(
+        select(WorkoutSet).join(WorkoutSession).where(WorkoutSession.user_id == current_user.id).where(WorkoutSet.exercise_id == exercise_id).order_by(desc(WorkoutSet.weight))
+    ).first()
+
+    if not pr_set:
+        raise HTTPException(status_code=404, detail="Record not Found")
+    
+    workout_session = session.get(WorkoutSession, pr_set.session_id)
+    if not workout_session:
+        raise HTTPException(status_code=404, detail="Workout session for the record not found")
+
+    return PersonalRecordTrack(
+        exercise_name= exercise.name,
+        max_weight= pr_set.weight,
+        reps_at_max=pr_set.reps,
+        record_at=workout_session.created_at
+
+    )

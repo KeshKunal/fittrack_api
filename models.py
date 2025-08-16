@@ -85,3 +85,9 @@ class WorkoutSessionReadwithSets(WorkoutSessionBase):
     id: int
     user_id: int
     sets: List[WorkoutSetRead]=[]
+
+class PersonalRecordTrack(SQLModel):
+    exercise_name: str
+    max_weight: float
+    reps_at_max: int
+    record_at: datetime
