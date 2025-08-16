@@ -1,5 +1,11 @@
+# Virtual Environment
 venv/
+.venv/
+
+# Cache files
 __pycache__/
 *.pyc
-.env
-.vscode/
+
+# Database file
+*.db
+database.db
