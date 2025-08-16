@@ -15,14 +15,14 @@ I recently started going GYM, I wanted something simple to keep track of my dail
 
 ![FitTrack API Endpoints](assets/API_Endpoints.png)
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **Backend**: Python 3, FastAPI
 * **Database**: SQLite with SQLModel (which uses SQLAlchemy and Pydantic)
 * **Server**: Uvicorn
 * **Authentication**: JWT 
 
-## 🚀 Setup and Installation
+## Setup and Installation
 
 Follow these steps to get one for yourself -->
 
@@ -60,7 +60,7 @@ Follow these steps to get one for yourself -->
     ```
     The API will be available at `http://127.0.0.1:8000`.
 
-## 📖 API Usage
+##  API Documentation
 
 The interactive API documentation will be available at `http://127.0.0.1:8000/docs` after running the application.
 
