@@ -1,17 +1,15 @@
 # FitTrack-API
 
-"FitTrack" is a personal fitness API to track workouts, body metrics, and personal best performance records. This project is built with FastAPI and SQLModel, featuring JWT authentication and a complete set of CRUD endpoints for managing fitness data. It's nothing but a Gateway to the Fitness World.
+"FitTrack" is a personal fitness RESTful API designed for fitness enthusiasts to track their daily workout sessions, body metrics, and personal best performance records. This project is built with FastAPI and SQLModel, featuring JWT authentication to keep data private and a complete set of CRUD endpoints for managing fitness data. It's nothing but a Gateway to the Fitness World.
 
 ## Motivation
 I recently started going GYM, I wanted something simple to keep track of my daily workouts, my body weight, my streaks and achievements without any complicated app. Cherry on the top, there was an YSWS called EndPointer going on which pushed me to build a complete RESTful API with JWT authentication from scratch. I'm very happy to successfully build my very first API.
 
 
 ## What it can Do?
+I designed the FitTrack API to work like a simple and straightforward digital gym diary. First, you create your own secure account and log in to get started. Once you are in, you can begin a new workout session for the day. As you train, you can add every set you complete by logging the specific exercise, the reps you performed, and the weight you lifted.
 
-* **Authentication**: It has secure one time registration which allows user to create username & password, and login using JWT authentication.
-* **Workout Tracking**: User can Create workout sessions and add individual sets of exercises with reps and weight.
-* **Personal Record Tracking**: I have added an endpoint to automatically find a user's best lift for any exercise.(will help me to push my limits)
-* **Body Metrics**: User can Log and retrieve past data for body measurements like weight, body fat percentage, etc...
+But it’s not just about logging data, it's about seeing your progress. You can look back at any past workout to see what you did, and my favorite feature is the Personal Record tracker endpoint, which instantly finds your single best lift for any exercise to help you celebrate your wins. I also added endpoints to track body metrics like weight, so you have a complete picture of your fitness journey over time.
 
 ![FitTrack API Endpoints](assets/API_Endpoints.png)
 
