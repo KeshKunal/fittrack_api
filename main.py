@@ -13,7 +13,11 @@ from datetime import date, datetime
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
-app = FastAPI()
+app = FastAPI(
+    title="FitTrack API",
+    version="1.0.0",
+    description="A personal fitness API to Track Workouts, Manage Body Metrics, and Personal Records.",
+)
 
 @app.on_event("startup")
 def on_startup():
@@ -21,7 +25,7 @@ def on_startup():
 
 @app.get("/")
 def read_root():
-    return{ "message": "Welcome to the FitTrack API!"}
+    return{ "message": "Welcome to the FitTrack API -- Your Gateway to the fitness world!"}
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl= "token")
 
