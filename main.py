@@ -6,9 +6,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from auth import get_current_user, get_password_hash, verify_password, create_access_token
 from models import (
     WorkoutSession, WorkoutSet, Exercise, User, UserCreate, Token,
-    ExerciseCreate, WorkoutSessionCreate, WorkoutSetCreate, WorkoutSetUpdate, WorkoutSessionReadwithSets, PersonalRecordTrack
+    ExerciseCreate, WorkoutSessionCreate, WorkoutSetCreate, WorkoutSetUpdate, WorkoutSessionReadwithSets, PersonalRecordTrack, BodyMeasurement, BodyMeasurementCreate
 )
-from datetime import datetime
+from datetime import date, datetime
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
@@ -120,7 +120,26 @@ def get_workout_session_details(
         raise HTTPException(status_code=404, detail="Workout session not found")
     return workout_session
 
-# POST 5 --> Add a set to a specific workout session
+# DELETE 2 --> Delete a specific workout Session
+@app.delete("/workouts/sessions/{session_id}", tags=["Session"])
+def delete_workout_session(
+    session_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_session)]
+):
+    db_session = session.get(WorkoutSession, session_id)
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Verify
+    if not db_session.user_id!= current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this session")
+
+    session.delete(db_session)
+    session.commit()
+    return {"message": "Session deleted successfully"}
+
+# POST 5 --> Add a set to a specific workout session  
 @app.post("/workouts/sessions/{session_id}/sets", response_model=WorkoutSet, tags=["workouts"])
 def add_set_to_workout(
     session_id: int,
@@ -186,7 +205,7 @@ def delete_workout_set(
     session.commit()
     return {"message": "Set deleted successfully"}
 
-# GET --> Personal Record Track
+# GET 5--> Personal Record Track
 
 @app.get("/exercises/{exercise_id}/p_record", response_model=PersonalRecordTrack, tags=["Personal Records"])
 def get_personal_record(
@@ -217,3 +236,40 @@ def get_personal_record(
         record_at=workout_session.created_at
 
     )
+
+# Body Metrics
+
+#POST 6 --> Log a new body Measurement for current user
+@app.post("/metrics/", response_model=BodyMeasurement, tags=["Body Metrics"])
+def log_body_measurement(
+    measurement_data: BodyMeasurementCreate,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_session)]
+):
+    
+    data_dict = measurement_data.model_dump()
+    if data_dict.get("created_at") is None:
+        pass
+
+    new_measurement = BodyMeasurement.model_validate(data_dict, update={"user_id": current_user.id})
+    
+    session.add(new_measurement)
+    session.commit()
+    session.refresh(new_measurement)
+    return new_measurement
+
+# GET 6 --> Get History of specific body measurement for the current user
+@app.get("/metrics/{metric_type}", response_model=List[BodyMeasurement], tags=["Body Metrics"])
+def get_body_measurements(
+    metric_type: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_session)]
+):
+    measurements = session.exec(
+        select(BodyMeasurement)
+        .where(BodyMeasurement.user_id == current_user.id)
+        .where(BodyMeasurement.metric_type == metric_type)
+        .order_by(desc(BodyMeasurement.created_at))
+    ).all()
+    
+    return measurements

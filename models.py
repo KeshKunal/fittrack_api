@@ -42,22 +42,27 @@ class User(SQLModel, table=True):
 class Exercise(ExerciseBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
+class BodyMeasurement(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    metric_type: str = Field(index=True)  # e.g., "weight", "body_fat_percentage"
+    value: float
+    created_at: datetime = Field(default_factory=datetime.now, index=True)
+    
+    user_id: int = Field(foreign_key="user.id")
+    user: "User" = Relationship()
+
 
 # --- API Input/Output Models ---
 
-# NEW: Model for creating an exercise
 class ExerciseCreate(ExerciseBase):
     pass
 
-# NEW: Model for creating a workout session
 class WorkoutSessionCreate(SQLModel):
     pass
 
-# NEW: Model for creating a new set
 class WorkoutSetCreate(WorkoutSetBase):
     pass
 
-# NEW: Model for updating a set (all fields are optional)
 class WorkoutSetUpdate(SQLModel):
     reps: Optional[int] = None
     weight: Optional[float] = None
@@ -91,3 +96,8 @@ class PersonalRecordTrack(SQLModel):
     max_weight: float
     reps_at_max: int
     record_at: datetime
+
+class BodyMeasurementCreate(SQLModel):
+    metric_type: str
+    value: float
+    created_at: Optional[datetime] = None
