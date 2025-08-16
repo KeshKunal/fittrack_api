@@ -1,55 +1,75 @@
 from typing import List, Optional
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import BaseModel
+from datetime import date, datetime
 
-# User Model: Stores user credentials
-class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(index=True, unique=True)
-    hashed_password: str
-    
-    # Establish the one-to-many relationship to WorkoutSession
-    workout_sessions: List["WorkoutSession"] = Relationship(back_populates="user")
+# --- Base Models (for shared properties) ---
 
-# Exercise Model: A library of available exercises
-class Exercise(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class ExerciseBase(SQLModel):
     name: str = Field(index=True, unique=True)
     description: str
     muscle_group: str = Field(index=True)
 
-# WorkoutSet Model: A single set of an exercise within a session
-class WorkoutSet(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class WorkoutSessionBase(SQLModel):
+    created_at: datetime = Field(default_factory=datetime.now, index=True)
+
+class WorkoutSetBase(SQLModel):
     reps: int
-    weight: float 
-    
-    # Foreign keys to link to the session and exercise
-    session_id: int = Field(foreign_key="workoutsession.id")
+    weight: float
     exercise_id: int = Field(foreign_key="exercise.id")
+
+# --- Database Models (with IDs and relationships) ---
+
+class WorkoutSet(WorkoutSetBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    session_id: int = Field(foreign_key="workoutsession.id")
+    
     session: "WorkoutSession" = Relationship(back_populates="sets")
     exercise: "Exercise" = Relationship()
 
-# WorkoutSession Model: Represents a single workout session for a user
-class WorkoutSession(SQLModel, table=True):
+class WorkoutSession(WorkoutSessionBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    date: str = Field(index=True)
+    user_id: int = Field(foreign_key="user.id")
     
-    # Foreign key to link to the user
-    user_id: int | None = Field(default=None, foreign_key="user.id")
-    
-    # Establish relationships
     user: "User" = Relationship(back_populates="workout_sessions")
-    
     sets: List["WorkoutSet"] = Relationship(back_populates="session")
 
-class UserCreate(BaseModel):
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(index=True, unique=True)
+    hashed_password: str
+    workout_sessions: List["WorkoutSession"] = Relationship(back_populates="user")
+
+class Exercise(ExerciseBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+
+# --- API Input/Output Models ---
+
+# NEW: Model for creating an exercise
+class ExerciseCreate(ExerciseBase):
+    pass
+
+# NEW: Model for creating a workout session
+class WorkoutSessionCreate(SQLModel):
+    pass
+
+# NEW: Model for creating a new set
+class WorkoutSetCreate(WorkoutSetBase):
+    pass
+
+# NEW: Model for updating a set (all fields are optional)
+class WorkoutSetUpdate(SQLModel):
+    reps: Optional[int] = None
+    weight: Optional[float] = None
+    exercise_id: Optional[int] = None
+
+class UserCreate(SQLModel):
     username: str
     password: str
 
-class Token(BaseModel):
+class Token(SQLModel):
     access_token: str
     token_type: str
 
-class TokenData(BaseModel):
+class TokenData(SQLModel):
     username: Optional[str] = None

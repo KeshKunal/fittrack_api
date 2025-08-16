@@ -4,7 +4,10 @@ from database import engine, get_session
 from typing import Annotated, List
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from auth import get_current_user, get_password_hash, verify_password, create_access_token
-from models import WorkoutSession, WorkoutSet, Exercise, User, UserCreate, Token
+from models import (
+    WorkoutSession, WorkoutSet, Exercise, User, UserCreate, Token,
+    ExerciseCreate, WorkoutSessionCreate, WorkoutSetCreate, WorkoutSetUpdate
+)
 from datetime import datetime
 
 def create_db_and_tables():
@@ -19,8 +22,6 @@ def on_startup():
 @app.get("/")
 def read_root():
     return{ "message": "Welcome to the FitTrack API!"}
-
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl= "token")
 
@@ -75,20 +76,22 @@ def read_exercises(session: Annotated[Session, Depends(get_session)]):
 
 #POST 3 --> Add new Excercise
 @app.post("/exercises/", response_model=Exercise, tags=["Exercises"])
-def create_exercise(exercise: Exercise, session: Annotated[Session, Depends(get_session)]):
-    session.add(exercise)
+def create_exercise(exercise_date: ExerciseCreate, session: Annotated[Session, Depends(get_session)]):
+    db_exercise= Exercise.model_validate(exercise_date)
+    session.add(db_exercise)
     session.commit()
-    session.refresh(exercise)
-    return exercise
+    session.refresh(db_exercise)
+    return db_exercise
 
 # POST 4 --> Create new workout session for the current user
 @app.post("/workouts/sessions/", response_model=WorkoutSession, tags=["Session"])
 def create_workout_session(
-    session_data: WorkoutSession,
     current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_session)]
 ):
-    new_session= WorkoutSession(date=session_data.date, user_id=current_user.id)
+    if current_user.id is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
+    new_session= WorkoutSession(user_id=current_user.id)
     session.add(new_session)
     session.commit()
     session.refresh(new_session)
@@ -121,7 +124,7 @@ def get_workout_session_details(
 @app.post("/workouts/sessions/{session_id}/sets", response_model=WorkoutSet, tags=["workouts"])
 def add_set_to_workout(
     session_id: int,
-    set_data: WorkoutSet,
+    set_data: WorkoutSetCreate,
     current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_session)]
 ):
@@ -129,7 +132,7 @@ def add_set_to_workout(
     if not workout_session or workout_session.user_id!= current_user.id:
         raise HTTPException(status_code=404, detail="Workout session not found")
     
-    new_set = WorkoutSet.model_validate(set_data)
+    new_set = WorkoutSet.model_validate(set_data, update={"session_id": session_id})
     new_set.session_id = session_id 
     
     session.add(new_set)
@@ -141,7 +144,7 @@ def add_set_to_workout(
 @app.put("/workouts/sets/{set_id}", response_model=WorkoutSet, tags=["workouts"])
 def update_workout_set(
     set_id: int,
-    set_update: WorkoutSet,
+    set_update: WorkoutSetUpdate,
     current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_session)]
 ):
@@ -149,7 +152,7 @@ def update_workout_set(
     if not db_set:
         raise HTTPException(status_code=404, detail="Set not found")
     
-    # Verify the user owns the session this set belongs to
+    # Verification
     workout_session = session.get(WorkoutSession, db_set.session_id)
     if not workout_session or workout_session.user_id!= current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to update this set")

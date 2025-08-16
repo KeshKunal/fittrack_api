@@ -11,7 +11,7 @@ from database import get_session
 
 SECRET_KEY = "it_is_very_easy_to_break@404"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES= 20
+ACCESS_TOKEN_EXPIRE_MINUTES= 30
 
 pwd_context= CryptContext( schemes=["bcrypt"], deprecated='auto')
 
@@ -27,7 +27,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta]= None):
         expire= datetime.now(timezone.utc)+expires_delta
 
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes = 10)
+        expire = datetime.now(timezone.utc) + timedelta(minutes = 20)
 
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
