@@ -18,7 +18,8 @@ But it’s not just about logging data, it's about seeing your progress. You can
 * **Backend**: Python 3, FastAPI
 * **Database**: SQLite with SQLModel (which uses SQLAlchemy and Pydantic)
 * **Server**: Uvicorn
-* **Authentication**: JWT 
+* **Authentication**: JWT
+* **Hosting**: Render
 
 ## Setup and Installation
 
@@ -60,7 +61,7 @@ Follow these steps to get one for yourself -->
 
 ##  API Documentation
 
-The interactive API documentation will be available at `http://127.0.0.1:8000/docs` after running the application.
+The interactive API documentation that I have hosted using Render and can be accessed at `(https://fittrack-api-h32h.onrender.com/docs)`.
 
 ### Key Endpoints
 
